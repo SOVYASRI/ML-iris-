@@ -1,0 +1,53 @@
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+import tensorflow as tf
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+lr_model = LogisticRegression()
+lr_model.fit(X_train_scaled, y_train)
+
+lr_predictions = lr_model.predict(X_test_scaled)
+lr_accuracy = accuracy_score(y_test, lr_predictions)
+print("Logistic Regression Accuracy:", lr_accuracy)
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10, activation='relu', input_shape=(4,)),
+    tf.keras.layers.Dense(3, activation='softmax')
+])
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+model.fit(X_train_scaled, y_train, epochs=50, batch_size=32, verbose=0)
+
+nn_loss, nn_accuracy = model.evaluate(X_test_scaled, y_test)
+print("Neural Network Accuracy:", nn_accuracy)
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+iris_df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
+iris_df['target'] = iris.target
+
+sns.pairplot(iris_df, hue='target', diag_kind='hist')
+plt.show()
+
+plt.figure(figsize=(9, 6))
+sns.boxplot(data=iris_df.drop('target', axis=1))
+plt.title('Boxplot of Iris Features')
+plt.show()
+
+plt.figure(figsize=(9, 5))
+sns.heatmap(iris_df.corr(), annot=True, cmap='coolwarm', linewidths=0.4)
+plt.title('Correlation Heatmap of Iris Features')
+plt.show()
